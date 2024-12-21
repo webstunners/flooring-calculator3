@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flooring Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        .calculator {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .calculator div {
+            margin-bottom: 15px;
+        }
+        .calculator label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .calculator input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            text-align: right;
+        }
+        .calculator .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .calculator button {
+            padding: 8px 12px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .calculator button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .total {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div>
+            <label for="quantity">Quantity (m²):</label>
+            <div class="row">
+                <button onclick="adjustQuantity(-0.1)">-</button>
+                <input type="number" id="quantity" step="0.1" value="1.62" oninput="directQuantityUpdate()">
+                <button onclick="adjustQuantity(0.1)">+</button>
+            </div>
+        </div>
+        <div>
+            <label for="wastage">Wastage:</label>
+            <div class="row">
+                <label><input type="radio" name="wastage" value="0" checked onchange="updateValues()"> 0%</label>
+                <label><input type="radio" name="wastage" value="7" onchange="updateValues()"> 7%</label>
+                <label><input type="radio" name="wastage" value="10" onchange="updateValues()"> 10%</label>
+            </div>
+        </div>
+        <div>
+            <label for="requiredBoxes">Required Boxes:</label>
+            <div class="row">
+                <button onclick="adjustBoxes(-1)">-</button>
+                <input type="number" id="requiredBoxes" step="1" value="1" onchange="updateValues()">
+                <button onclick="adjustBoxes(1)">+</button>
+            </div>
+        </div>
+        <div>
+            <label>Box Size:</label>
+            <div>1.62 m²</div>
+        </div>
+        <div>
+            <label>Price Per m²:</label>
+            <div>$39.95</div>
+        </div>
+        <div>
+            <label>Weight Per Box:</label>
+            <div>17.82 kg</div>
+        </div>
+        <div>
+            <label>Total Weight:</label>
+            <div id="totalWeight">17.82 kg</div>
+        </div>
+        <div>
+            <label>Total Pallets:</label>
+            <div id="totalPallets">1</div>
+        </div>
+        <div>
+            <label>Purchase Quantity:</label>
+            <div id="purchaseQuantity">1.62 m²</div>
+        </div>
+        <div class="total" id="totalPrice">$64.72</div>
+    </div>
+    <script>
+        const boxSize = 1.62; // m²
+        const pricePerM2 = 39.95; // $
+        const weightPerBox = 17.82; // kg
+
+        function updateValues() {
+            const quantityInput = document.getElementById('quantity');
+            const boxesInput = document.getElementById('requiredBoxes');
+            const wastageRadios = document.getElementsByName('wastage');
+
+            let quantity = parseFloat(quantityInput.value);
+            let boxes = Math.ceil(quantity / boxSize);
+
+            boxesInput.value = boxes;
+
+            // Add wastage
+            let wastage = 0;
+            for (const radio of wastageRadios) {
+                if (radio.checked) {
+                    wastage = parseFloat(radio.value);
+                    break;
+                }
+            }
+            const adjustedQuantity = quantity * (1 + wastage / 100);
+
+            // Calculate totals
+            const totalWeight = boxes * weightPerBox;
+            const totalPrice = adjustedQuantity * pricePerM2;
+
+            // Update display
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2) + ' kg';
+            document.getElementById('purchaseQuantity').textContent = adjustedQuantity.toFixed(2) + ' m²';
+            document.getElementById('totalPallets').textContent = Math.ceil(boxes / 50); // Example: 50 boxes per pallet
+            document.getElementById('totalPrice').textContent = '$' + totalPrice.toFixed(2);
+        }
+
+        function adjustQuantity(delta) {
+            const quantityInput = document.getElementById('quantity');
+            let quantity = parseFloat(quantityInput.value) + delta;
+            if (quantity < boxSize) quantity = boxSize;
+            quantityInput.value = quantity.toFixed(2);
+            updateValues();
+        }
+
+        function adjustBoxes(delta) {
+            const boxesInput = document.getElementById('requiredBoxes');
+            let boxes = parseInt(boxesInput.value) + delta;
+            if (boxes < 1) boxes = 1;
+            boxesInput.value = boxes;
+            updateValues();
+        }
+
+        function directQuantityUpdate() {
+            const quantityInput = document.getElementById('quantity');
+            let quantity = parseFloat(quantityInput.value);
+            if (isNaN(quantity) || quantity < boxSize) {
+                quantity = boxSize;
+            }
+            const boxes = Math.ceil(quantity / boxSize);
+            document.getElementById('requiredBoxes').value = boxes;
+            updateValues();
+        }
+
+        // Initialize values
+        updateValues();
+    </script>
+</body>
+</html>
